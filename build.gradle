@@ -1,0 +1,175 @@
+// Main project (located in apps/)
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath('org.springframework.boot:spring-boot-gradle-plugin:2.6.5')
+    }
+}
+
+plugins {
+    id "org.sonarqube" version "2.7"
+}
+
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'maven-publish'
+
+    sourceCompatibility = 8
+    targetCompatibility = 8
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' }
+    }
+
+
+    ext {
+        set('springCloudVersion', "2021.0.1")
+    }
+
+
+    dependencies {
+        // Prod
+        implementation 'org.apache.tomcat:tomcat-dbcp:10.0.12'
+        implementation 'org.reflections:reflections:0.10.2'
+        implementation 'com.google.guava:guava:31.0.1-jre'
+        implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+
+
+
+        //hl7
+        implementation 'ca.uhn.hapi:hapi-structures-v25:2.3'
+        implementation 'ca.uhn.hapi:hapi-structures-v24:2.3'
+
+        //spring-boot
+        implementation 'org.springframework.boot:spring-boot-starter-amqp:2.6.5'
+        implementation 'org.springframework.boot:spring-boot-starter-activemq:2.6.5'
+        implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.6.5'
+        implementation 'org.springframework.boot:spring-boot-starter-web:2.6.5'
+        implementation 'org.springframework.boot:spring-boot-starter-security:2.6.5'
+        implementation 'org.springframework.boot:spring-boot-starter-log4j2:2.6.5'
+
+        //pdf
+        implementation 'org.apache.pdfbox:pdfbox:2.0.8'
+
+        //qr
+        implementation 'com.google.zxing:core:3.3.0'
+        implementation 'com.google.zxing:javase:3.3.0'
+
+        //lombok
+        compileOnly 'org.projectlombok:lombok:1.18.22'
+        annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+        testCompileOnly 'org.projectlombok:lombok:1.18.22'
+        testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+        //liquibase
+        //implementation 'org.liquibase:liquibase-core:4.9.1'
+
+        //drivers bbdd
+        runtimeOnly 'mysql:mysql-connector-java:8.0.25'
+        runtimeOnly 'com.h2database:h2:1.4.200'
+        runtimeOnly 'org.firebirdsql.jdbc:jaybird-jdk18:3.0.2'
+
+        // Test
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.5.2'
+        testImplementation 'com.github.javafaker:javafaker:1.0.2'
+        testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.5.2'
+        testRuntimeOnly 'org.springframework.boot:spring-boot-starter-log4j2:2.6.5'
+    }
+
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+    }
+    configurations {
+        all {
+            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        }
+    }
+
+}
+
+// All subprojects (located in src/*)
+subprojects {
+    group = "com.rallibau.${rootProject.name}"
+
+    sourceSets {
+        main {
+            java { srcDirs = ['main'] }
+            resources { srcDirs = ['main/resources'] }
+        }
+
+        test {
+            java { srcDirs = ['test'] }
+            resources { srcDirs = ['test/resources'] }
+        }
+    }
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-web:2.6.5'
+
+        testImplementation rootProject.sourceSets.main.output
+        testImplementation 'org.springframework.boot:spring-boot-starter-test:2.6.5'
+
+        if (project.name != "shared") {
+            implementation project(":shared")
+            testImplementation project(":shared").sourceSets.test.output
+        }
+    }
+
+    bootJar {
+        enabled = false
+    }
+
+    jar {
+        enabled = true
+    }
+}
+
+sourceSets {
+    main {
+        java { srcDirs = ['apps/main'] }
+        resources { srcDirs = ['apps/main/resources'] }
+    }
+
+    test {
+        java { srcDirs = ['apps/test'] }
+        resources { srcDirs = ['apps/test/resources'] }
+    }
+}
+
+apply plugin: 'application'
+
+
+bootJar {
+    archiveBaseName = 'rallibau-ddd-backend'
+    archiveVersion = '0.0.1'
+}
+
+mainClassName = 'com.rallibau.apps.Starter'
+
+dependencies {
+    implementation project(":shared")
+    implementation project(":boundedContext")
+
+
+    testImplementation project(":shared").sourceSets.test.output
+}
+
+

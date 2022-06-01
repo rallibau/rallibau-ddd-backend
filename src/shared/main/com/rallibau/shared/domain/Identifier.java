@@ -1,0 +1,52 @@
+package com.rallibau.shared.domain;
+
+import javax.persistence.MappedSuperclass;
+import java.io.Serializable;
+import java.util.Objects;
+import java.util.UUID;
+
+@MappedSuperclass
+public abstract class Identifier implements Serializable {
+    final protected String value;
+
+    public Identifier(String value) {
+        ensureValidUuid(value);
+
+        this.value = value;
+    }
+
+    protected Identifier() {
+        this.value = null;
+    }
+
+    public String value() {
+        return value;
+    }
+
+    public Integer valueInteger(){
+        return Integer.valueOf(value());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Identifier that = (Identifier) o;
+        return value.equals(that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
+    }
+
+    public void ensureValidUuid(String value) throws IllegalArgumentException {
+        if (value != null && !value.isEmpty()) {
+            UUID.fromString(value);
+        }
+    }
+}

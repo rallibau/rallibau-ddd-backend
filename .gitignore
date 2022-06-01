@@ -1,0 +1,10 @@
+.idea/
+.gradle/
+build/
+.attach*
+*.hprof
+frontend_examples/node_modules/
+id_file
+*.bak
+~*
+logs/*.log

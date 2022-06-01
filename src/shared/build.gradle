@@ -1,0 +1,24 @@
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-security:2.1.8.RELEASE'
+}
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'com.visual-limes'
+            artifactId = 'shared'
+            version = '1.0.0-DEV-SNAPSHOT'
+
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username "$nexusUser"
+                password "$nexusPassword"
+            }
+            url "http://nexus.visual-limes.com:8081/repository/maven-snapshots"
+            allowInsecureProtocol true
+        }
+    }
+}
